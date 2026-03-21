@@ -62,9 +62,8 @@ export const TrackingMapDOM = observer(() => {
   return (
     <Box
       sx={{
-        minHeight: "calc(100vh - 64px)",
+        height: "100%",
         width: "100%",
-        pl: 4,
         boxSizing: "border-box",
       }}
     >

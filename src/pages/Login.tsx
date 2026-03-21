@@ -62,6 +62,33 @@ const Login = observer(() => {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography
+            component="h2"
+            variant="h5"
+            sx={{
+              color: "primary.dark",
+              textAlign: "center",
+              fontWeight: "600",
+            }}
+          >
+            Backend is deployed on Render and need to wake up when accessed
+            after a period of inactivity. So, the first login attempt may take a
+            few seconds. Please be patient.
+          </Typography>
+        </Paper>
+
+        <Paper
+          elevation={5}
+          sx={{
+            width: "100%",
+            boxSizing: "border-box",
+            padding: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
           <Avatar sx={{ m: 1, bgcolor: "primary.main" }}>
