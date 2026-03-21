@@ -22,8 +22,8 @@ const createCustomIcon = (direction: number, status: "active" | "lost") => {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 50px;
-        height: 50px;
+        width: 24px;
+        height: 24px;
       ">
         <svg viewBox="0 0 24 24" fill="currentColor" width="24px" height="24px" stroke="white" stroke-width="1.5">
           <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
