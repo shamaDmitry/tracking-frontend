@@ -1,14 +1,13 @@
-import { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import { io } from "socket.io-client";
 import { Box, Typography, Chip } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import { useStore } from "../store/RootStore";
+import { red, blue } from "@mui/material/colors";
 
 const createCustomIcon = (direction: number, status: "active" | "lost") => {
-  const color = status === "lost" ? "#f44336" : "#4caf50";
+  const color = status === "lost" ? red[500] : blue[500];
   const opacity = status === "lost" ? 0.5 : 1;
 
   return L.divIcon({
@@ -38,24 +37,6 @@ const createCustomIcon = (direction: number, status: "active" | "lost") => {
 
 export const TrackingMapDOM = observer(() => {
   const { mapStore } = useStore();
-
-  useEffect(() => {
-    const socket = io(
-      import.meta.env.VITE_BACKEND_URL || "http://localhost:3001",
-    );
-
-    socket.on("connect", () => {
-      console.log("Connected to tracking server");
-    });
-
-    socket.on("object_update", (data) => {
-      mapStore.handleBatchUpdate(data);
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [mapStore]);
 
   const mapCenter: [number, number] = [50.4501, 30.5234];
 

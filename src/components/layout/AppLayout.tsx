@@ -16,19 +16,23 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MapIcon from "@mui/icons-material/Map";
 import CanvasIcon from "@mui/icons-material/Brush";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useStore } from "../../store/RootStore";
+import { io } from "socket.io-client";
+import { observer } from "mobx-react-lite";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
-function AppLayout({ children }: AppLayoutProps) {
+export const AppLayout = observer(({ children }: AppLayoutProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
-  const { authStore } = useStore();
+
+  const { authStore, mapStore } = useStore();
 
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
@@ -39,9 +43,26 @@ function AppLayout({ children }: AppLayoutProps) {
     { text: "Tracking (Canvas)", icon: <CanvasIcon />, path: "/with-canvas" },
   ];
 
+  useEffect(() => {
+    const socket = io(
+      import.meta.env.VITE_BACKEND_URL || "http://localhost:3001",
+    );
+
+    socket.on("connect", () => {
+      console.log("Connected to tracking server");
+    });
+
+    socket.on("object_update", (data) => {
+      mapStore.handleBatchUpdate(data);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [mapStore]);
+
   const handleLogout = () => {
     authStore.logout();
-
     navigate("/login");
   };
 
@@ -101,6 +122,4 @@ function AppLayout({ children }: AppLayoutProps) {
       </Box>
     </Box>
   );
-}
-
-export default AppLayout;
+});

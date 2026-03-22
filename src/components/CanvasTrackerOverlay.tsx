@@ -1,12 +1,12 @@
-// components/CanvasTrackerOverlay.tsx
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 import { autorun } from "mobx";
 import { useStore } from "../store/RootStore";
+import { red, blue, orange } from "@mui/material/colors";
+import { findObjectAtMouse } from "../helpers/findObjectAtMouse";
 
 export const CanvasTrackerOverlay = () => {
   const { mapStore } = useStore();
-
   const map = useMap();
 
   useEffect(() => {
@@ -18,12 +18,28 @@ export const CanvasTrackerOverlay = () => {
     canvas.style.pointerEvents = "none";
     canvas.style.zIndex = "400";
 
-    // Mount canvas to the Leaflet container
     map.getContainer().appendChild(canvas);
-
     const ctx = canvas.getContext("2d");
 
-    // 2. The Core Drawing Function
+    const handleMouseMove = (e: L.LeafletMouseEvent) => {
+      const hovered = findObjectAtMouse(e, map, mapStore);
+
+      if (hovered !== mapStore.hoveredId) {
+        mapStore.setHovered(hovered);
+
+        map.getContainer().style.cursor = hovered ? "pointer" : "grab";
+      }
+    };
+
+    const handleMouseClick = (e: L.LeafletMouseEvent) => {
+      const clicked = findObjectAtMouse(e, map, mapStore);
+
+      mapStore.setSelected(clicked);
+    };
+
+    map.on("mousemove", handleMouseMove);
+    map.on("click", handleMouseClick);
+
     const draw = () => {
       if (!ctx) return;
 
@@ -37,46 +53,42 @@ export const CanvasTrackerOverlay = () => {
       // Clear the previous frame
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Get current map bounds (Optimization: don't draw off-screen objects)
       const bounds = map.getBounds();
 
       mapStore.points.forEach((obj) => {
         if (!bounds.contains([obj.lat, obj.lng])) return;
 
-        // Convert the Lat/Lng to exact X/Y pixels on your screen
         const point = map.latLngToContainerPoint([obj.lat, obj.lng]);
+        const isHovered = mapStore.hoveredId === obj.id;
+        const isSelected = mapStore.selectedId === obj.id;
 
         ctx.save();
-
-        // Move the canvas origin to the object's X/Y coordinate
         ctx.translate(point.x, point.y);
-
-        // Rotate the canvas (Canvas uses radians, so we convert from degrees)
         ctx.rotate((obj.direction * Math.PI) / 180);
 
-        // 3. Draw the directional arrow
+        const scale = isHovered || isSelected ? 1.3 : 1;
+        ctx.scale(scale, scale);
+
         ctx.beginPath();
         ctx.moveTo(0, -12);
         ctx.lineTo(8, 12);
         ctx.lineTo(0, 6);
         ctx.lineTo(-8, 12);
         ctx.closePath();
-        ctx.fillStyle =
-          obj.status === "lost" ? "rgba(244, 67, 54, 0.5)" : "#4caf50";
+        ctx.fillStyle = obj.status === "lost" ? `${red[500]}` : `${blue[500]}`;
         ctx.fill();
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = "#fff";
+
+        ctx.lineWidth = isSelected ? 3 : 1.5;
+        ctx.strokeStyle = isSelected ? orange[500] : "#fff";
         ctx.stroke();
 
         ctx.restore();
       });
     };
 
-    // 4. Trigger redraws on Map movement and MobX updates
     map.on("move", draw);
     map.on("zoom", draw);
 
-    // MobX autorun will automatically fire 'draw' whenever mapStore.objectsList changes
     const cleanupMobx = autorun(() => {
       draw();
     });
@@ -84,8 +96,9 @@ export const CanvasTrackerOverlay = () => {
     // Initial draw
     draw();
 
-    // 5. Cleanup on unmount
     return () => {
+      map.off("mousemove", handleMouseMove);
+      map.off("click", handleMouseClick);
       map.off("move", draw);
       map.off("zoom", draw);
 
@@ -93,7 +106,7 @@ export const CanvasTrackerOverlay = () => {
 
       map.getContainer().removeChild(canvas);
     };
-  }, [map, mapStore.points]);
+  }, [map, mapStore.points, mapStore]);
 
   return null;
 };

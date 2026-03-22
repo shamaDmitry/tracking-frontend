@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import Login from "./pages/Login";
 import WithDOM from "./pages/WithDOM";
-import AppLayout from "./components/layout/AppLayout";
+import { AppLayout } from "./components/layout/AppLayout";
 import WithCanvas from "./pages/WithCanvas";
 import NotFound from "./pages/NotFound";
 import { useStore } from "./store/RootStore";
