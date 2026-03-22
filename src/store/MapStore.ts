@@ -5,37 +5,50 @@ export interface PointObject {
   lat: number;
   lng: number;
   direction: number;
-  lastSeen: number;
   status: "active" | "lost";
 }
 
-export class MapStore {
-  private LOST_THRESHOLD = 5000; // 15 seconds
-  private REMOVE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+export interface TrackerStatusUpdate {
+  id: string;
+  status: "active" | "lost" | "removed";
+}
 
+export class MapStore {
   points: Map<string, PointObject> = new Map();
   hoveredId: string | null = null;
   selectedId: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
-
-    setInterval(() => this.cleanupRoutine(), 5000);
   }
 
-  handleBatchUpdate = action(
-    (dataArray: Omit<PointObject, "lastSeen" | "status">[]) => {
-      const now = Date.now();
+  handleBatchUpdate = action((dataArray: PointObject[]) => {
+    dataArray.forEach((data) => {
+      this.points.set(data.id, data);
+    });
+  });
 
-      dataArray.forEach((data) => {
-        this.points.set(data.id, {
-          ...data,
-          lastSeen: now,
-          status: "active",
-        });
-      });
-    },
-  );
+  handleStatusUpdate = action((updates: TrackerStatusUpdate[]) => {
+    updates.forEach((update) => {
+      if (update.status === "removed") {
+        this.points.delete(update.id);
+
+        if (this.selectedId === update.id) {
+          this.selectedId = null;
+        }
+
+        if (this.hoveredId === update.id) {
+          this.hoveredId = null;
+        }
+      } else {
+        const point = this.points.get(update.id);
+
+        if (point) {
+          point.status = update.status as "active" | "lost";
+        }
+      }
+    });
+  });
 
   setHovered(id: string | null) {
     this.hoveredId = id;
@@ -43,23 +56,6 @@ export class MapStore {
 
   setSelected(id: string | null) {
     this.selectedId = id;
-  }
-
-  cleanupRoutine() {
-    const now = Date.now();
-
-    for (const [id, obj] of this.points.entries()) {
-      const timeSinceLastSeen = now - obj.lastSeen;
-
-      if (timeSinceLastSeen > this.REMOVE_THRESHOLD) {
-        this.points.delete(id); // Completely remove
-      } else if (
-        timeSinceLastSeen > this.LOST_THRESHOLD &&
-        obj.status !== "lost"
-      ) {
-        obj.status = "lost"; // Flag as lost
-      }
-    }
   }
 
   get objectsList() {

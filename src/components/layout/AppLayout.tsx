@@ -39,8 +39,8 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
   };
 
   const menuItems = [
-    { text: "Tracking (DOM)", icon: <MapIcon />, path: "/with-dom" },
     { text: "Tracking (Canvas)", icon: <CanvasIcon />, path: "/with-canvas" },
+    { text: "Tracking (DOM)", icon: <MapIcon />, path: "/with-dom" },
   ];
 
   useEffect(() => {
@@ -56,6 +56,10 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
       // console.log("data", data);
 
       mapStore.handleBatchUpdate(data);
+    });
+
+    socket.on("status_update", (data) => {
+      mapStore.handleStatusUpdate(data);
     });
 
     return () => {

@@ -1,7 +1,18 @@
 import { Box, Container, Typography } from "@mui/material";
 import { TrackingMapCanvas } from "../components/TrackingMapCanvas";
+import { useEffect } from "react";
+import { useLocation } from "react-router";
+import { useStore } from "../store/RootStore";
 
 function WithCanvas() {
+  const { pathname } = useLocation();
+  const { mapStore } = useStore();
+
+  useEffect(() => {
+    mapStore.setSelected(null);
+    mapStore.setHovered(null);
+  }, [pathname, mapStore]);
+
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 2 }}>

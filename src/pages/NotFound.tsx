@@ -1,8 +1,12 @@
-import { NavLink, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { useEffect } from "react";
+import { Box, Container, Typography, Button } from "@mui/material";
+import { useNavigate } from "react-router";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error(
@@ -12,22 +16,45 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">404</h1>
+    <Container maxWidth="sm">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          gap: 3,
+        }}
+      >
+        <ErrorOutlineIcon sx={{ fontSize: 80, color: "error.main" }} />
 
-        <p className="mb-4 text-xl text-muted-foreground">
-          Oops! Page not found
-        </p>
+        <Typography
+          variant="h1"
+          component="h1"
+          sx={{ fontSize: 64, fontWeight: 700 }}
+        >
+          404
+        </Typography>
 
-        <NavLink
-          to="/"
-          className="text-primary underline hover:text-primary/90"
+        <Typography
+          variant="h5"
+          color="textSecondary"
+          sx={{ textAlign: "center" }}
+        >
+          Oops! The page you are looking for does not exist.
+        </Typography>
+
+        <Button
+          variant="contained"
+          size="large"
+          onClick={() => navigate("/")}
+          sx={{ marginTop: 2 }}
         >
           Return to Home
-        </NavLink>
-      </div>
-    </div>
+        </Button>
+      </Box>
+    </Container>
   );
 };
 

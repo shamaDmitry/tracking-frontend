@@ -28,7 +28,7 @@ const AppRoutes = observer(() => {
   const homeRedirect = () => {
     if (!authStore.isAuthenticated) return "/login";
 
-    return "/with-dom";
+    return "/with-canvas";
   };
 
   return (
