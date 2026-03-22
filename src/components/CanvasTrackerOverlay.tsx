@@ -37,8 +37,15 @@ export const CanvasTrackerOverlay = () => {
       mapStore.setSelected(clicked);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        mapStore.setSelected(null);
+      }
+    };
+
     map.on("mousemove", handleMouseMove);
     map.on("click", handleMouseClick);
+    window.addEventListener("keydown", handleKeyDown);
 
     const draw = () => {
       if (!ctx) return;
@@ -101,6 +108,7 @@ export const CanvasTrackerOverlay = () => {
       map.off("click", handleMouseClick);
       map.off("move", draw);
       map.off("zoom", draw);
+      window.removeEventListener("keydown", handleKeyDown);
 
       cleanupMobx();
 

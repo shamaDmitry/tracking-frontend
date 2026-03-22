@@ -53,6 +53,8 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
     });
 
     socket.on("object_update", (data) => {
+      // console.log("data", data);
+
       mapStore.handleBatchUpdate(data);
     });
 
@@ -63,6 +65,7 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
 
   const handleLogout = () => {
     authStore.logout();
+
     navigate("/login");
   };
 

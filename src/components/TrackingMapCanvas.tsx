@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import {
   Box,
   Card,
@@ -12,6 +12,27 @@ import "leaflet/dist/leaflet.css";
 import { CanvasTrackerOverlay } from "./CanvasTrackerOverlay";
 import { useStore } from "../store/RootStore";
 import CloseIcon from "@mui/icons-material/Close";
+import { useEffect } from "react";
+
+const MapAutoPan = observer(() => {
+  const { mapStore } = useStore();
+  const map = useMap();
+
+  const selectedObject = mapStore.selectedId
+    ? mapStore.points.get(mapStore.selectedId)
+    : null;
+
+  useEffect(() => {
+    if (selectedObject) {
+      map.panTo([selectedObject.lat, selectedObject.lng], {
+        animate: true,
+        duration: 0.5,
+      });
+    }
+  }, [selectedObject, map]);
+
+  return null;
+});
 
 export const TrackingMapCanvas = observer(() => {
   const mapCenter: [number, number] = [50.4501, 30.5234];
@@ -40,6 +61,8 @@ export const TrackingMapCanvas = observer(() => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        <MapAutoPan />
 
         <CanvasTrackerOverlay />
       </MapContainer>
@@ -83,6 +106,7 @@ export const TrackingMapCanvas = observer(() => {
               <strong>Status:</strong>
 
               <Chip
+                component={"span"}
                 sx={{ ml: 1 }}
                 size="small"
                 label={selectedObject.status.toUpperCase()}
@@ -106,7 +130,7 @@ export const TrackingMapCanvas = observer(() => {
               <strong>Coordinates:</strong>
 
               <Typography component="span" sx={{ fontWeight: "bold" }}>
-                {selectedObject.lat.toFixed(4)}, {selectedObject.lng.toFixed(4)}
+                {selectedObject.lat.toFixed(5)}, {selectedObject.lng.toFixed(5)}
               </Typography>
             </Typography>
           </CardContent>
