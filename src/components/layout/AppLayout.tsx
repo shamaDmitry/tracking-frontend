@@ -1,4 +1,5 @@
 import {
+  Alert,
   AppBar,
   Avatar,
   Box,
@@ -9,6 +10,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Snackbar,
   Toolbar,
   Typography,
 } from "@mui/material";
@@ -53,13 +55,15 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
     });
 
     socket.on("object_update", (data) => {
-      // console.log("data", data);
-
       mapStore.handleBatchUpdate(data);
     });
 
     socket.on("status_update", (data) => {
       mapStore.handleStatusUpdate(data);
+    });
+
+    socket.on("status_log", (data) => {
+      mapStore.handleLogUpdate(data);
     });
 
     return () => {
@@ -72,6 +76,10 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
 
     navigate("/login");
   };
+
+  const notificationMessage = mapStore.lastLog
+    ? `Tracker ${mapStore.lastLog.id} is now ${mapStore.lastLog.status === "active" ? "ONLINE" : "OFFLINE"}`
+    : "";
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -127,6 +135,21 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
       <Box component="main" sx={{ flexGrow: 1, p: 0 }}>
         {children}
       </Box>
+
+      <Snackbar
+        open={mapStore.showNotification}
+        autoHideDuration={4000}
+        onClose={() => mapStore.closeNotification()}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => mapStore.closeNotification()}
+          severity={mapStore.lastLog?.status === "active" ? "success" : "error"}
+          sx={{ width: "100%" }}
+        >
+          {notificationMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 });

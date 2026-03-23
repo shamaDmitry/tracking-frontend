@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import {
   Container,
   Box,
@@ -21,13 +21,13 @@ const Login = observer(() => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (identifier.trim()) {
       authStore.login(identifier);
 
-      navigate("/with-dom");
+      navigate("/with-canvas");
     }
   };
 

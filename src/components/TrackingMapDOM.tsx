@@ -6,7 +6,7 @@ import { Box, Typography, Chip } from "@mui/material";
 import "leaflet/dist/leaflet.css";
 import { useStore } from "../store/RootStore";
 import { red, blue } from "@mui/material/colors";
-import { type PointObject } from "../store/MapStore";
+import type { PointObject } from "../types";
 
 const TrackerMarker = observer(({ obj }: { obj: PointObject }) => {
   const map = useMap();
@@ -61,6 +61,7 @@ const TrackerMarker = observer(({ obj }: { obj: PointObject }) => {
     const visual = container.querySelector(
       ".tracker-icon-visual",
     ) as HTMLElement;
+
     if (visual) {
       visual.style.transform = `rotate(${obj.direction}deg)`;
       visual.style.color = obj.status === "lost" ? red[500] : blue[500];
@@ -69,16 +70,18 @@ const TrackerMarker = observer(({ obj }: { obj: PointObject }) => {
 
     if (marker.isPopupOpen()) {
       marker.setLatLng([obj.lat, obj.lng]);
+      map.panTo([obj.lat, obj.lng], { animate: true, duration: 0.5 });
     }
   }, [obj.lat, obj.lng, obj.direction, obj.status, map]);
 
   return (
     <Marker ref={markerRef} position={[obj.lat, obj.lng]} icon={icon}>
-      <Popup autoPan={false} closeButton={false}>
+      <Popup autoPan={false}>
         <Box sx={{ p: 0, width: 180 }}>
           <Typography variant="subtitle2" fontWeight="bold">
             ID: {obj.id}
           </Typography>
+
           <Typography variant="subtitle1" display="block">
             Dir: {obj.direction}°
           </Typography>
@@ -111,9 +114,10 @@ export const TrackingMapDOM = observer(() => {
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {mapStore.objectsList.map((obj) => (
-          <TrackerMarker key={obj.id} obj={obj} />
-        ))}
+
+        {mapStore.objectsList.map((obj) => {
+          return <TrackerMarker key={obj.id} obj={obj} />;
+        })}
       </MapContainer>
     </Box>
   );

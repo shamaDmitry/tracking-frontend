@@ -1,22 +1,17 @@
 import { action, makeAutoObservable } from "mobx";
-
-export interface PointObject {
-  id: string;
-  lat: number;
-  lng: number;
-  direction: number;
-  status: "active" | "lost";
-}
-
-export interface TrackerStatusUpdate {
-  id: string;
-  status: "active" | "lost" | "removed";
-}
+import type {
+  PointObject,
+  Status,
+  StatusLogEntry,
+  TrackerStatusUpdate,
+} from "../types";
 
 export class MapStore {
   points: Map<string, PointObject> = new Map();
   hoveredId: string | null = null;
   selectedId: string | null = null;
+  lastLog: StatusLogEntry | null = null;
+  showNotification = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -44,10 +39,19 @@ export class MapStore {
         const point = this.points.get(update.id);
 
         if (point) {
-          point.status = update.status as "active" | "lost";
+          point.status = update.status as Status;
         }
       }
     });
+  });
+
+  handleLogUpdate = action((log: StatusLogEntry) => {
+    this.lastLog = log;
+    this.showNotification = true;
+  });
+
+  closeNotification = action(() => {
+    this.showNotification = false;
   });
 
   setHovered(id: string | null) {
