@@ -18,6 +18,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MapIcon from "@mui/icons-material/Map";
 import CanvasIcon from "@mui/icons-material/Brush";
 import LogoutIcon from "@mui/icons-material/Logout";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useStore } from "../../store/RootStore";
@@ -66,10 +67,27 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
       mapStore.handleLogUpdate(data);
     });
 
+    socket.on("simulation_reset", () => {
+      mapStore.reset();
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [mapStore]);
+
+  const handleResetSimulation = async () => {
+    try {
+      await fetch(
+        `${import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"}/reset`,
+        {
+          method: "POST",
+        },
+      );
+    } catch (error) {
+      console.error("Failed to reset simulation:", error);
+    }
+  };
 
   const handleLogout = () => {
     authStore.logout();
@@ -99,6 +117,15 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Tracking App
           </Typography>
+
+          <IconButton
+            color="inherit"
+            onClick={handleResetSimulation}
+            sx={{ mr: 1 }}
+            title="Reset Simulation"
+          >
+            <RefreshIcon />
+          </IconButton>
 
           <Avatar sx={{ bgcolor: "secondary.main", mr: 2 }}>
             {authStore.userId?.charAt(0).toUpperCase()}
@@ -139,7 +166,12 @@ export const AppLayout = observer(({ children }: AppLayoutProps) => {
       <Snackbar
         open={mapStore.showNotification}
         autoHideDuration={4000}
-        onClose={() => mapStore.closeNotification()}
+        onClose={(_, reason) => {
+          if (reason === "clickaway") {
+            return;
+          }
+          mapStore.closeNotification();
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Alert

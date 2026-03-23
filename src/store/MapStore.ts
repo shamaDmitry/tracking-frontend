@@ -50,6 +50,14 @@ export class MapStore {
     this.showNotification = true;
   });
 
+  reset = action(() => {
+    this.points.clear();
+    this.hoveredId = null;
+    this.selectedId = null;
+    this.lastLog = null;
+    this.showNotification = false;
+  });
+
   closeNotification = action(() => {
     this.showNotification = false;
   });
