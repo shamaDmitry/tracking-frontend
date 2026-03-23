@@ -26,7 +26,6 @@ const TrackerMarker = observer(({ obj }: { obj: PointObject }) => {
         ">
           <div class="tracker-icon-visual" style="
             color: ${obj.status === "lost" ? red[500] : blue[500]};
-            opacity: ${obj.status === "lost" ? 0.5 : 1};
             display: flex;
             justify-content: center;
             align-items: center;
@@ -65,7 +64,6 @@ const TrackerMarker = observer(({ obj }: { obj: PointObject }) => {
     if (visual) {
       visual.style.transform = `rotate(${obj.direction}deg)`;
       visual.style.color = obj.status === "lost" ? red[500] : blue[500];
-      visual.style.opacity = obj.status === "lost" ? "0.5" : "1";
     }
 
     if (marker.isPopupOpen()) {
